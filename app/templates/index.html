@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1" />
+		<title>Spotify example</title>
+		<script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+		<style>
+            .trackData{font-weight: bold}
+            .score{font-size: 3em; font-weight: bold; color: #483d8b}
+            .currentTrackUntil{color:#bbbbbb}
+        </style>
+		<script>
+
+            function renderCurrentTrack(){
+				$.ajax({url: "/api/currenttrack", 
+						type: "GET", 
+						success: function(result) {
+                            var obj = jQuery.parseJSON(result);
+                            console.log(obj)
+                            $("#currentTrackName").text(obj["track"]["name"]);
+                            $("#currentTrackArtist").text(obj["track"]["artist"]);
+                            $("#currentTrackUntil").text(obj["track"]["until"]);
+                            $("#upvotes").text(obj["track"]["up"]);
+                            $("#downvotes").text(obj["track"]["down"]);
+                            $("#score").text(obj["track"]["up"] - obj["track"]["down"])
+                        },
+						error: function(xhr) {
+                            console.log("An error occured: " + xhr.status + " " + xhr.statusText); 
+                        }
+				}) 
+            }
+
+			$(document).ready(function() {
+			
+				$("#upvote").click(function() {
+                    $.ajax({url: "/api/upvote", 
+                            type: "POST",
+                            success: function(data){
+                                var obj = jQuery.parseJSON(data);
+                                renderCurrentTrack()
+                            }
+                    })
+				});
+				
+				$("#downvote").click(function() {
+                    $.ajax({url: "/api/downvote", 
+                            type: "POST",
+                            success: function(data){
+                                var obj = jQuery.parseJSON(data);
+                                renderCurrentTrack()
+                            }
+                    })
+				});
+
+                renderCurrentTrack()
+
+				myInterval = setInterval(function(){
+					renderCurrentTrack();
+				}, 3000)
+
+			});
+
+
+		</script>
+	</head>
+	<body>
+
+		<div class="container">
+		
+			<div class="jumbotron">
+				<h1>Spotify example</h1>
+                <div>Using jQuery 3.6.0 and Bootstrap 3.3.7</div>
+			</div>
+		
+            <p>Current track : <span id="currentTrackName" class="trackData"></span> by <span id="currentTrackArtist" class="trackData"></span> <span id="currentTrackUntil" class="currentTrackUntil"></span></p>
+			<div>
+				<button id="upvote" type="button" class="btn btn-success btn-lg">Up vote</button>
+                <span id="upvotes"></span>
+			</div>
+            <div>
+                <button id="downvote" type="button" class="btn btn-danger btn-lg">Down vote</button>
+                <span id="downvotes"></span>
+            </div>
+			
+            <div class="score" id="score"></div>
+		
+		</div>
+	</body> 
+</html>
